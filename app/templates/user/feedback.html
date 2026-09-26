@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Feedback - {{ event.event_name }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 760px;">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <h2 class="mb-1">Feedback & Rating</h2>
+      <p class="text-muted">{{ event.event_name }}</p>
+      <form id="feedbackForm">
+        <label class="form-label fw-bold">Rating</label>
+        <select name="rating" class="form-select mb-3" required>
+          {% for n in range(5,0,-1) %}<option value="{{ n }}" {% if existing and existing.rating == n %}selected{% endif %}>{{ n }} / 5</option>{% endfor %}
+        </select>
+        <label class="form-label fw-bold">Comment</label>
+        <textarea name="comment" class="form-control mb-3" rows="5" placeholder="Share your experience">{{ existing.comment if existing else '' }}</textarea>
+        <button class="btn btn-success"><i class="bi bi-star-fill"></i> Save Feedback</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('feedbackForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  fetch('{{ url_for("features.feedback", event_id=event.id) }}', {method:'POST', body:new FormData(this)})
+    .then(r=>r.json()).then(d=>showToast(d.success?'Success':'Error', d.message, d.success?'success':'danger'));
+});
+</script>
+{% endblock %}

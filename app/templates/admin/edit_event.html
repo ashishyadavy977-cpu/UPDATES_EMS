@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Event - EMS Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4">Edit Event</h2>
+
+            <div class="card shadow-lg">
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" novalidate>
+                        <div class="mb-3">
+                            <label for="event_name" class="form-label">Event Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="event_name" name="event_name" 
+                                   value="{{ event.event_name }}" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="event_date" class="form-label">Event Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="event_date" name="event_date" 
+                                       value="{{ event.event_date }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="event_time" class="form-label">Event Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="event_time" name="event_time" 
+                                       value="{{ event.event_time.strftime('%H:%M') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="venue" class="form-label">Venue <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="venue" name="venue" 
+                                   value="{{ event.venue }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="capacity" class="form-label">Capacity <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" 
+                                   value="{{ event.capacity }}" min="1" required>
+                            <small class="text-muted">Current registrations: {{ event.registrations|length }}</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{ event.description or '' }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="image" class="form-label">Event Image</label>
+                            {% if event.image_filename %}
+                                <div class="mb-2">
+                                    <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}" 
+                                         alt="{{ event.event_name }}" class="img-thumbnail" width="200">
+                                </div>
+                            {% endif %}
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            <small class="text-muted">Leave empty to keep current image. Accepted: PNG, JPG, JPEG, GIF (Max 16MB)</small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Update Event
+                            </button>
+                            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

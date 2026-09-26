@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Registrations - EMS Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">Event Registrations</h1>
+
+    <!-- Filter by Event -->
+    <div class="mb-4">
+        <form method="GET" class="d-flex gap-2">
+            <select name="event_id" class="form-select" style="max-width: 300px;">
+                <option value="">All Events</option>
+                {% for event in events %}
+                    <option value="{{ event.id }}" {% if event.id == selected_event_id %}selected{% endif %}>
+                        {{ event.event_name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-filter"></i> Filter
+            </button>
+            {% if selected_event_id %}
+                <a href="{{ url_for('admin.registrations') }}" class="btn btn-secondary">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Registrations Table -->
+    {% if registrations.items %}
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>User Email</th>
+                            <th>User Name</th>
+                            <th>Event Name</th>
+                            <th>Registration Date</th>
+                            <th>QR Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registration in registrations.items %}
+                            <tr>
+                                <td>#{{ registration.id }}</td>
+                                <td>{{ registration.user.email }}</td>
+                                <td>{{ registration.user.name }}</td>
+                                <td>{{ registration.event.event_name }}</td>
+                                <td>{{ registration.registration_date.strftime('%m/%d/%Y %H:%M') }}</td>
+                                <td>
+                                    {% if registration.qr_code_filename %}
+                                        <span class="badge bg-success">Generated</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if registrations.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if registrations.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.registrations', page=registrations.prev_num, event_id=selected_event_id) }}">
+                                Previous
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for page_num in registrations.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == registrations.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.registrations', page=page_num, event_id=selected_event_id) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if registrations.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.registrations', page=registrations.next_num, event_id=selected_event_id) }}">
+                                Next
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">No registrations found.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

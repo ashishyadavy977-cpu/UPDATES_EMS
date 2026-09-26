@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.event_name }} - EMS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            {% if event.image_filename %}
+                <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}" 
+                     class="img-fluid rounded mb-4" alt="{{ event.event_name }}" style="max-height: 400px; object-fit: cover; width: 100%;">
+            {% else %}
+                <div class="bg-secondary d-flex align-items-center justify-content-center rounded mb-4" style="height: 400px;">
+                    <i class="bi bi-calendar-event text-white" style="font-size: 5rem;"></i>
+                </div>
+            {% endif %}
+
+            <h1 class="mb-3">{{ event.event_name }}</h1>
+
+            <div class="mb-4">
+                <h5 class="text-muted">Event Details</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-calendar"></i> Date:</strong> {{ event.event_date }}</p>
+                        <p><strong><i class="bi bi-clock"></i> Time:</strong> {{ event.event_time.strftime('%H:%M') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-geo"></i> Venue:</strong> {{ event.venue }}</p>
+                        <p><strong><i class="bi bi-people"></i> Capacity:</strong> {{ event.capacity }} people</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h5 class="text-muted">About This Event</h5>
+                <p class="lead">{{ event.description }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Registration Card -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Event Registration</h5>
+
+                    <!-- Status Badge -->
+                    <div class="mb-3">
+                        {% if event.is_full %}
+                            <span class="badge bg-danger w-100 p-2">Event is Full</span>
+                        {% else %}
+                            <span class="badge bg-success w-100 p-2">{{ event.remaining_seats }} Seats Available</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Registration Button -->
+                    {% if registered %}
+                        <div class="alert alert-success alert-sm mb-3">
+                            <i class="bi bi-check-circle"></i> You are registered for this event!
+                        </div>
+                        <a href="{{ url_for('user.my_tickets') }}" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-ticket"></i> View My Ticket
+                        </a>
+                    {% elif event.is_full %}
+                        <button class="btn btn-warning w-100" onclick="joinWaitlist({{ event.id }})">
+                            <i class="bi bi-hourglass-split"></i> Join Waitlist
+                        </button>
+                        <div id="waitlistPosition" class="small text-muted mt-2"></div>
+                    {% else %}
+                        <button class="btn btn-success w-100" onclick="registerEvent({{ event.id }})">
+                            <i class="bi bi-check-lg"></i> Register Now
+                        </button>
+                    {% endif %}
+
+                    <a href="{{ url_for('features.calendar_event', event_id=event.id) }}" class="btn btn-outline-primary w-100 mt-2">
+                        <i class="bi bi-calendar-plus"></i> Add to Calendar
+                    </a>
+                    <a href="{{ url_for('features.feedback_page', event_id=event.id) }}" class="btn btn-outline-success w-100 mt-2">
+                        <i class="bi bi-star"></i> Feedback & Rating
+                    </a>
+                    <a href="{{ url_for('user.events') }}" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="bi bi-arrow-left"></i> Back to Events
+                    </a>
+                </div>
+            </div>
+
+            <!-- Event Statistics -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Statistics</h5>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Registrations</small>
+                        <h4 class="mb-0">{{ event.registrations|length }}</h4>
+                        <div class="progress mt-2">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ (event.registrations|length / event.capacity * 100)|int }}%">
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ event.remaining_seats }} seats remaining out of {{ event.capacity }}</small>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-broadcast"></i> Live Event Tracking</h5>
+                    <p class="mb-1">Status: <span id="liveStatus" class="badge bg-secondary">Checking...</span></p>
+                    <small class="text-muted">Status updates automatically every 15 seconds.</small>
+                    <a class="btn btn-sm btn-outline-primary mt-3" target="_blank" rel="noopener"
+                       href="https://www.google.com/maps/search/?api=1&query={{ event.venue|urlencode }}">
+                        <i class="bi bi-geo-alt"></i> Open Venue Map
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function registerEvent(eventId) {
+    if (confirm('Are you sure you want to register for this event?')) {
+        fetch(`/user/register/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Success', data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('Error', data.message, 'danger');
+            }
+        })
+        .catch(error => showToast('Error', 'An error occurred', 'danger'));
+    }
+}
+
+function refreshEventStatus() {
+    fetch('{{ url_for("features.event_status_api", event_id=event.id) }}')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) return;
+            const el = document.getElementById('liveStatus');
+            el.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+            el.className = 'badge ' + (data.status === 'live' ? 'bg-success' : data.status === 'completed' ? 'bg-dark' : 'bg-primary');
+        });
+}
+function joinWaitlist(eventId) {
+    fetch(`/features/waitlist/${eventId}`, {method: 'POST'})
+        .then(r => r.json()).then(data => {
+            showToast(data.success ? 'Waitlist' : 'Error', data.message, data.success ? 'success' : 'danger');
+            if (data.success) checkWaitlist();
+        });
+}
+function checkWaitlist() {
+    fetch('{{ url_for("features.waitlist_position", event_id=event.id) }}')
+        .then(r => r.json()).then(data => {
+            const el = document.getElementById('waitlistPosition');
+            if (el && data.position) el.textContent = 'Your waitlist position: #' + data.position;
+        });
+}
+refreshEventStatus();
+setInterval(refreshEventStatus, 15000);
+{% if event.is_full %}checkWaitlist();{% endif %}
+</script>
+{% endblock %}

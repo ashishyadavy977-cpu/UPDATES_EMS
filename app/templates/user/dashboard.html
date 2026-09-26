@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - EMS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Welcome, {{ current_user.name }}! 👋</h1>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-1">Total Registered Events</h6>
+                            <h2 class="mb-0">{{ total_registrations }}</h2>
+                        </div>
+                        <i class="bi bi-calendar-check text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-1">Upcoming Events</h6>
+                            <h2 class="mb-0">{{ upcoming_events|length }}</h2>
+                        </div>
+                        <i class="bi bi-calendar-event text-success" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Events Section -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Your Upcoming Events</h3>
+            <a href="{{ url_for('user.events') }}" class="btn btn-sm btn-primary">Browse More</a>
+        </div>
+
+        {% if upcoming_events %}
+            <div class="row">
+                {% for event in upcoming_events[:3] %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 shadow-sm hover-shadow">
+                            {% if event.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}" 
+                                     class="card-img-top" alt="{{ event.event_name }}" height="200">
+                            {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="bi bi-calendar-event text-white" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ event.event_name }}</h5>
+                                <p class="card-text text-muted small">
+                                    <i class="bi bi-calendar"></i> {{ event.event_date }}
+                                    <br>
+                                    <i class="bi bi-clock"></i> {{ event.event_time.strftime('%H:%M') }}
+                                    <br>
+                                    <i class="bi bi-geo"></i> {{ event.venue }}
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{{ url_for('user.event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">No upcoming events registered. <a href="{{ url_for('user.events') }}">Browse events</a> to register.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Quick Actions</h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <a href="{{ url_for('user.events') }}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-search"></i> Find Events
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('user.my_tickets') }}" class="btn btn-outline-success w-100">
+                        <i class="bi bi-ticket"></i> My Tickets
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('user.profile') }}" class="btn btn-outline-info w-100">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow {
+        transition: box-shadow 0.3s ease;
+    }
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+{% endblock %}

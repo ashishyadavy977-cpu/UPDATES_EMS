@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - EMS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h2 class="card-title mb-4">My Profile</h2>
+
+                    <form method="POST" action="{{ url_for('user.update_profile') }}" id="profileForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ current_user.name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" 
+                                   value="{{ current_user.email }}" disabled>
+                            <small class="text-muted">Email cannot be changed</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ current_user.phone or '' }}">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Member Since</label>
+                            <p class="form-control-plaintext">{{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-check-lg"></i> Update Profile
+                        </button>
+
+                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary w-100">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{{ url_for("user.update_profile") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Success', data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('Error', data.message, 'danger');
+        }
+    })
+    .catch(error => showToast('Error', 'An error occurred', 'danger'));
+});
+</script>
+{% endblock %}

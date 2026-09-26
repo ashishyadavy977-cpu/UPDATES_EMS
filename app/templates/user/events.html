@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Events Catalog - EMS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Events Catalog</h1>
+
+    <!-- Search Bar -->
+    <div class="mb-4">
+        <form method="GET" class="d-flex gap-2">
+            <input type="text" name="search" class="form-control" placeholder="Search events by name or venue..."
+                   value="{{ search or '' }}">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Search
+            </button>
+            {% if search %}
+                <a href="{{ url_for('user.events') }}" class="btn btn-secondary">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Events Grid -->
+    {% if events.items %}
+        <div class="row mb-5">
+            {% for event in events.items %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm hover-shadow">
+                        {% if event.image_filename %}
+                            <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}" 
+                                 class="card-img-top" alt="{{ event.event_name }}" height="220">
+                        {% else %}
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 220px;">
+                                <i class="bi bi-calendar-event text-white" style="font-size: 3rem;"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.event_name }}</h5>
+                            <p class="card-text text-muted small mb-3">
+                                <i class="bi bi-calendar"></i> {{ event.event_date }}
+                                <br>
+                                <i class="bi bi-clock"></i> {{ event.event_time.strftime('%H:%M') }}
+                                <br>
+                                <i class="bi bi-geo"></i> {{ event.venue }}
+                            </p>
+                            <p class="card-text">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
+                            <div class="mb-3">
+                                {% if not event.is_full %}
+                                    <span class="badge bg-success">{{ event.remaining_seats }} Seats Available</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Event Full</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <a href="{{ url_for('user.event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if events.pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if events.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('user.events', page=events.prev_num, search=search) }}">
+                                Previous
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for page_num in events.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == events.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('user.events', page=page_num, search=search) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if events.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('user.events', page=events.next_num, search=search) }}">
+                                Next
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">
+                {% if search %}
+                    No events found matching "{{ search }}". <a href="{{ url_for('user.events') }}">View all events</a>
+                {% else %}
+                    No events available at the moment.
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .hover-shadow {
+        transition: box-shadow 0.3s ease;
+    }
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+{% endblock %}

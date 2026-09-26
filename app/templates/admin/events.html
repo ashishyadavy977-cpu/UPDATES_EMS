@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Events - EMS Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Manage Events</h1>
+        <a href="{{ url_for('admin.create_event') }}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Create Event
+        </a>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-4">
+        <form method="GET" class="d-flex gap-2">
+            <input type="text" name="search" class="form-control" placeholder="Search events..."
+                   value="{{ search or '' }}">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Search
+            </button>
+            {% if search %}
+                <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Events Table -->
+    {% if events.items %}
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Thumbnail</th>
+                            <th>Event Name</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Venue</th>
+                            <th>Capacity</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events.items %}
+                            <tr>
+                                <td>
+                                    {% if event.image_filename %}
+                                        <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}"
+                                             alt="{{ event.event_name }}" class="event-thumbnail">
+                                    {% else %}
+                                        <div class="event-thumbnail event-thumbnail-placeholder" aria-label="No thumbnail">
+                                            <i class="bi bi-calendar-event"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ event.event_name }}</strong></td>
+                                <td>{{ event.event_date }}</td>
+                                <td>{{ event.event_time.strftime('%H:%M') }}</td>
+                                <td>{{ event.venue }}</td>
+                                <td>{{ event.capacity }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ event.registrations|length }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.edit_event', event_id=event.id) }}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteEvent({{ event.id }})">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if events.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if events.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.events', page=events.prev_num, search=search) }}">
+                                Previous
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for page_num in events.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == events.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.events', page=page_num, search=search) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if events.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.events', page=events.next_num, search=search) }}">
+                                Next
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">
+                {% if search %}
+                    No events found matching "{{ search }}".
+                {% else %}
+                    No events found. <a href="{{ url_for('admin.create_event') }}">Create one</a>.
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function deleteEvent(eventId) {
+    if (confirm('Are you sure? This will also delete all registrations for this event.')) {
+        fetch(`/admin/event/${eventId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Success', data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('Error', data.message, 'danger');
+            }
+        })
+        .catch(error => showToast('Error', 'An error occurred', 'danger'));
+    }
+}
+</script>
+{% endblock %}

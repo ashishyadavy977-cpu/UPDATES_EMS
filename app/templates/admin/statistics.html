@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics - EMS Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">System Statistics</h1>
+
+    <!-- Summary Cards -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-1">Total Users</h6>
+                            <h2 class="mb-0">{{ total_users }}</h2>
+                        </div>
+                        <i class="bi bi-people text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-1">Total Events</h6>
+                            <h2 class="mb-0">{{ total_events }}</h2>
+                        </div>
+                        <i class="bi bi-calendar-event text-success" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-1">Total Registrations</h6>
+                            <h2 class="mb-0">{{ total_registrations }}</h2>
+                        </div>
+                        <i class="bi bi-ticket-perforated text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Registration Overview -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Registrations by Event</h5>
+        </div>
+        <div class="card-body">
+            {% if events_with_registrations %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Number of Registrations</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events_with_registrations %}
+                                <tr>
+                                    <td><strong>{{ event[0] }}</strong></td>
+                                    <td>{{ event[1] }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ (event[1] / total_registrations * 100)|int }}%">
+                                                {{ (event[1] / total_registrations * 100)|int }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No registration data available.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Additional Metrics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">System Overview</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Average Registrations per Event:</strong> 
+                        {% if total_events > 0 %}
+                            {{ (total_registrations / total_events)|round(2) }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </p>
+                    <p><strong>Registration Conversion Rate:</strong> 
+                        {% if total_users > 0 %}
+                            {{ (total_registrations / total_users * 100)|round(2) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Quick Links</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('admin.events') }}" class="btn btn-sm btn-primary mb-2 w-100">
+                        <i class="bi bi-calendar"></i> View All Events
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-info mb-2 w-100">
+                        <i class="bi bi-people"></i> View All Users
+                    </a>
+                    <a href="{{ url_for('admin.registrations') }}" class="btn btn-sm btn-success w-100">
+                        <i class="bi bi-ticket"></i> View All Registrations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

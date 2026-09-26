@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}QR Check-In - EMS Admin{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card shadow-sm"><div class="card-body">
+        <h2><i class="bi bi-qr-code-scan"></i> QR Code Check-In</h2>
+        <p class="text-muted">Scan an attendee's ticket QR code. Camera access is required for live scanning.</p>
+        <div id="reader" style="max-width:520px"></div>
+      </div></div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card shadow-sm"><div class="card-body">
+        <h5>Manual Check-In</h5>
+        <form id="manualForm"><input class="form-control mb-2" name="registration_id" type="number" min="1" placeholder="Registration ID" required><button class="btn btn-primary w-100">Check In</button></form>
+        <div id="result" class="mt-3"></div>
+      </div></div>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+function submitCheckin(payload){
+ fetch('{{ url_for("features.checkin") }}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+ .then(r=>r.json()).then(d=>{document.getElementById('result').innerHTML='<div class="alert '+(d.success?'alert-success':'alert-danger')+'">'+d.message+'</div>';});
+}
+document.getElementById('manualForm').addEventListener('submit',e=>{e.preventDefault(); submitCheckin({registration_id:e.target.registration_id.value});});
+if (window.Html5Qrcode) {
+ const scanner=new Html5Qrcode('reader');
+ scanner.start({facingMode:'environment'},{fps:10,qrbox:250},text=>{submitCheckin({qr_data:text}); scanner.stop();})
+ .catch(()=>{document.getElementById('result').innerHTML='<div class="alert alert-warning">Camera unavailable. Use manual Registration ID.</div>';});
+}
+</script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}My Tickets - EMS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">My Tickets</h1>
+
+    {% if registrations %}
+        <div class="row">
+            {% for registration in registrations %}
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">{{ registration.event.event_name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <p class="mb-2">
+                                        <strong><i class="bi bi-calendar"></i> Date:</strong> 
+                                        {{ registration.event.event_date }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong><i class="bi bi-clock"></i> Time:</strong> 
+                                        {{ registration.event.event_time.strftime('%H:%M') }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong><i class="bi bi-geo"></i> Venue:</strong> 
+                                        {{ registration.event.venue }}
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong><i class="bi bi-calendar-check"></i> Registered:</strong> 
+                                        {{ registration.registration_date.strftime('%b %d, %Y') }}
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    {% if registration.qr_code_filename %}
+                                        <img src="{{ url_for('static', filename='qrcodes/' + registration.qr_code_filename) }}" 
+                                             alt="QR Code" width="150" class="img-fluid">
+                                        <p class="text-muted small mt-2">Ticket ID: {{ registration.id }}</p>
+                                    {% else %}
+                                        <div class="bg-light p-3 rounded">
+                                            <p class="text-muted">QR Code not available</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="row g-2">
+                                {% if registration.qr_code_filename %}
+                                    <div class="col-md-6">
+                                        <a href="{{ url_for('user.download_ticket', registration_id=registration.id) }}" 
+                                           class="btn btn-sm btn-primary w-100">
+                                            <i class="bi bi-download"></i> Download Ticket
+                                        </a>
+                                    </div>
+                                {% endif %}
+                                <div class="col-md-6">
+                                    <button class="btn btn-sm btn-danger w-100" 
+                                            onclick="cancelRegistration({{ registration.id }})">
+                                        <i class="bi bi-trash"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">You haven't registered for any events yet. 
+                <a href="{{ url_for('user.events') }}">Browse events</a> to register.
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function cancelRegistration(registrationId) {
+    if (confirm('Are you sure you want to cancel this registration? This action cannot be undone.')) {
+        fetch(`/user/unregister/${registrationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Success', data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('Error', data.message, 'danger');
+            }
+        })
+        .catch(error => showToast('Error', 'An error occurred', 'danger'));
+    }
+}
+</script>
+{% endblock %}

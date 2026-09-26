@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Event Management System{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+    <div class="container home-hero-inner">
+        <div class="home-hero-copy">
+            <span class="eyebrow"><span></span> Events, made memorable</span>
+            <h1>Bring people together through great events.</h1>
+            <p>Manage events, welcome guests, and keep every detail in one place.</p>
+            <div class="home-hero-actions">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Get started <i class="bi bi-arrow-up-right"></i></a>
+                <a href="{{ url_for('user.events') }}" class="btn btn-outline-primary">Explore events</a>
+            </div>
+            <div class="hero-note"><i class="bi bi-check-circle-fill"></i> One simple platform for every occasion</div>
+        </div>
+        <div class="home-hero-visual">
+            <img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=85" alt="Audience enjoying a live event">
+            <div class="hero-image-caption"><span class="caption-icon"><i class="bi bi-stars"></i></span><span><strong>Make it an occasion</strong><small>From first invite to final encore</small></span></div>
+            <div class="hero-accent hero-accent-one"></div>
+            <div class="hero-accent hero-accent-two"></div>
+        </div>
+    </div>
+</section>
+
+<div class="container home-content">
+    <!-- Features Grid -->
+    <div class="features-grid mb-5">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            <h3>Manage Events</h3>
+            <p>Create, edit, and manage events with ease. Full control over event details and scheduling.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+            <h3>Track Registrations</h3>
+            <p>Monitor event registrations in real-time with detailed analytics and reporting capabilities.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <h3>User Management</h3>
+            <p>Manage users and their permissions with role-based access control and security features.</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-section mb-5">
+        <div class="stats-heading"><span class="eyebrow">Everything in sync</span><h2>One view. The whole picture.</h2></div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">6+</div>
+                <div class="stat-label">Active Events</div>
+                <div class="stat-icon"><i class="bi bi-calendar2-check"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">8+</div>
+                <div class="stat-label">Registered Users</div>
+                <div class="stat-icon"><i class="bi bi-person-fill"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Uptime</div>
+                <div class="stat-icon"><i class="bi bi-shield-check"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Section -->
+    <div class="login-section">
+        <div class="section-heading"><span class="eyebrow">Your next event starts here</span><h2>Ready when you are.</h2></div>
+        <div class="login-grid">
+            <!-- User Login Card -->
+            <div class="login-card user-login-card">
+                <div class="login-card-header">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <h3>User Login</h3>
+                <p>Access your account and register for amazing events</p>
+                <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
+                    <div class="mb-3">
+                        <input type="email" class="form-control" name="email" placeholder="Email Address" required aria-label="Email Address">
+                    </div>
+                    <div class="mb-4">
+                        <input type="password" class="form-control" name="password" placeholder="Password" required aria-label="Password">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                </form>
+                <div class="text-center mt-3">
+                    <p class="mb-0">Don't have an account?</p>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-link text-decoration-none">Create one now</a>
+                </div>
+            </div>
+
+            <!-- Admin Portal (Hidden from regular view) -->
+            <div class="login-card admin-login-card" id="adminCard" style="display: none;">
+                <div class="login-card-header admin">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <h3>Admin Portal</h3>
+                <p>Authorized personnel only - Secure access</p>
+                <form method="GET" action="{{ url_for('auth.admin_login') }}" class="login-form">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-door-open"></i> Go to Admin Login
+                    </button>
+                </form>
+                <p class="text-muted mt-3 small text-center">Admin credentials required</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Keyboard shortcut to reveal admin login: Press 'Ctrl+Shift+A'
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.shiftKey && event.code === 'KeyA') {
+            const adminCard = document.getElementById('adminCard');
+            if (adminCard) {
+                adminCard.style.display = adminCard.style.display === 'none' ? 'block' : 'none';
+                if (adminCard.style.display !== 'none') {
+                    Notifier.info('Admin portal revealed', 'Tip');
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

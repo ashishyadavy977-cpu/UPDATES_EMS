@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Advanced Analytics - EMS Admin{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4"><h1>Advanced Analytics Dashboard</h1><a href="{{ url_for('features.attendance_csv') }}" class="btn btn-success"><i class="bi bi-filetype-csv"></i> Export Attendance CSV</a></div>
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><small class="text-muted">Total Attendance</small><h2>{{ total_attendance }}</h2></div></div></div>
+    <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><small class="text-muted">Active Waitlist Entries</small><h2>{{ total_waitlist }}</h2></div></div></div>
+    <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><small class="text-muted">Feedback Submitted</small><h2>{{ total_feedback }}</h2></div></div></div>
+  </div>
+  <div class="card shadow-sm"><div class="table-responsive"><table class="table table-hover mb-0">
+    <thead class="table-light"><tr><th>Event</th><th>Registrations</th><th>Attendance</th><th>Waitlist</th><th>Avg Rating</th><th>Attendance %</th><th>Notifications</th></tr></thead>
+    <tbody>{% for row in event_rows %}<tr><td><strong>{{ row.event.event_name }}</strong></td><td>{{ row.registrations }}/{{ row.event.capacity }}</td><td>{{ row.attendance }}</td><td>{{ row.waitlist }}</td><td>{% if row.avg_rating %}{{ row.avg_rating }}/5{% else %}—{% endif %}</td><td>{% if row.registrations %}{{ ((row.attendance / row.registrations) * 100)|round(1) }}%{% else %}0%{% endif %}</td><td><form method="post" action="{{ url_for('features.notify_event', event_id=row.event.id) }}" class="d-flex gap-1"><input name="subject" class="form-control form-control-sm" placeholder="Subject"><input name="message" class="form-control form-control-sm" placeholder="Message" required><button class="btn btn-sm btn-primary">Send</button></form></td></tr>{% else %}<tr><td colspan="7" class="text-center text-muted">No events found.</td></tr>{% endfor %}</tbody>
+  </table></div></div>
+</div>
+{% endblock %}

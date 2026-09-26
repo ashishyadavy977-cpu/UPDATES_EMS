@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - EMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-danger">
+                <div class="card-body p-5">
+                    <h2 class="card-title mb-1 text-center">Admin Portal</h2>
+                    <p class="text-center text-muted mb-4">Authorized Personnel Only</p>
+                    <form method="POST" novalidate>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Admin Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                            <label class="form-check-label" for="remember_me">
+                                Remember me
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100 mb-3">Admin Login</button>
+                    </form>
+
+                    <div class="text-center">
+                        <p class="mb-0">
+                            <a href="{{ url_for('auth.login') }}" class="text-decoration-none">User Login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
